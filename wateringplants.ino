@@ -33,7 +33,7 @@ int moistVal4   = 0;
 int avgMoistVal = 0;
 
 const int moistLimit      = 400;
-const int defaultDelay    = 600;
+const int defaultDelay    = 6000;   // Bug fix!
 int moistureDelay         = 0;
 int pumpSpeed             = 200;
 int potVal                = 0;
