@@ -9,4 +9,6 @@ watering.
 - 1 x Potentiometer
 - 4 x Moisture sensors
 
+Uses Time and TimeAlarms libraries from https://www.pjrc.com/teensy/td_libs_TimeAlarms.html.
+
 Code in progress.
