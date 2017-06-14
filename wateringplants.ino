@@ -26,17 +26,19 @@ const int MOISTURE_3     = A3;
 const int MOISTURE_4     = A4;
 const int PUMP           = 9;
 
+const int defaultDelay    = 6000;   // Delay when no extra water is needed
+const int moistLimit      = 400;    // Sensor value when extra water is needed
+const int delayLimit      = 10000;  // Maximum extra delay when extra water is needed
+
 int moistVal1   = 0;
 int moistVal2   = 0;
 int moistVal3   = 0;
 int moistVal4   = 0;
 int avgMoistVal = 0;
 
-const int moistLimit      = 400;
-const int defaultDelay    = 6000;   // Bug fix!
-int moistureDelay         = 0;
-int pumpSpeed             = 200;
-int potVal                = 0;
+int moistureDelay = 0;
+int pumpSpeed     = 0;
+int potVal        = 0;
 
 volatile int measureTimer  = 0;
 volatile int waterTimer    = 0;
@@ -131,6 +133,9 @@ void measureMoisture() {
   moistVal3 = analogRead(MOISTURE_3);
   moistVal4 = analogRead(MOISTURE_4);
 
+  // TODO: Add a check if sensors are defect ( value = 0? ) to
+  // aviod lowering the average when sensors are defect
+  
   avgMoistVal = (moistVal1 + moistVal2 + moistVal3 + moistVal4) / 4;
 
   DEBUG_PRINTLN("Moisture levels (0-1023) plant 1-4:");
@@ -142,10 +147,9 @@ void measureMoisture() {
   DEBUG_PRINTLN(avgMoistVal);
 
   if (avgMoistVal < moistLimit) {
-    // SET 25 FROM moistLimit, needs to be fixed!
-    // 0-10s delay, 25=1000ms/moistLimit
-    
-    moistureDelay = 25 * (moistLimit - avgMoistVal); 
+    // Delay 0 to delayLimit ms extra if plants are dry
+    moistureDelay = 25 * (moistLimit - avgMoistVal);
+    //moistureDelay = (delayLimit/moistLimit) * (moistLimit - avgMoistVal); // Not tested
   }
   else {
     moistureDelay = 0;
@@ -157,17 +161,17 @@ void measureMoisture() {
 
 void waterPlants() {
   DEBUG_PRINTLN("Watering plants...");
-  DEBUG_PRINTLN("Pump speed and watering time:");
-  DEBUG_PRINTLN(pumpSpeed);
+  DEBUG_PRINTLN("Watering time:");
   DEBUG_PRINTLN(defaultDelay + moistureDelay);
-
+  
+  pumpSpeed = 200;
   analogWrite(PUMP, pumpSpeed);
+  
   delay(defaultDelay);
-
-  analogWrite(PUMP, pumpSpeed);
   delay(moistureDelay);
-
-  analogWrite(PUMP, 0);
+  
+  pumpSpeed = 0;
+  analogWrite(PUMP, pumpSpeed);
 }
 
 // For time output in debug mode
